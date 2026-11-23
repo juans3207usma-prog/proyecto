@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventario Farmacia</title>
+  </head>
+  <body>
+    <header class="barra">
+      <h1>Inventario Farmacia</h1>
+      <span class="alerta-badge" title="Productos con stock bajo">
+        Alertas: <strong id="badge">0</strong>
+      </span>
+    </header>
+
+    <main>
+      <p id="mensaje" role="status"></p>
+
+      <section id="seccion-alertas">
+        <h2>Stock bajo</h2>
+        <ul id="lista-alertas"></ul>
+        <h2>Pr&oacute;ximos a vencer (30 d&iacute;as)</h2>
+        <ul id="lista-vencer"></ul>
+      </section>
+
+      <section>
+        <h2>Productos</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>M&iacute;nimo</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-productos"></tbody>
+        </table>
+      </section>
+
+      <section class="formularios">
+        <form id="form-entrada">
+          <h2>Entrada de lote</h2>
+          <select name="producto_id" required></select>
+          <input name="numero_lote" placeholder="N&deg; de lote" required />
+          <input name="cantidad" type="number" min="1" placeholder="Cantidad" required />
+          <input name="fecha_vencimiento" type="date" required />
+          <button type="submit">Registrar entrada</button>
+        </form>
+
+        <form id="form-salida">
+          <h2>Salida (venta)</h2>
+          <select name="producto_id" required></select>
+          <input name="cantidad" type="number" min="1" placeholder="Cantidad" required />
+          <button type="submit">Registrar salida</button>
+        </form>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
