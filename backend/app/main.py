@@ -2,8 +2,11 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.routers import alertas, categorias, movimientos, productos
-from app.services.errores import ErrorNegocio
+from app import models  # noqa: F401  (registra todas las tablas)
+from app.alertas import router as alertas
+from app.catalogo import router_categorias, router_productos
+from app.compartido.errores import ErrorNegocio
+from app.inventario import router as inventario
 
 app = FastAPI(title="Inventario Farmacia")
 
@@ -14,9 +17,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(categorias.router)
-app.include_router(productos.router)
-app.include_router(movimientos.router)
+app.include_router(router_categorias.router)
+app.include_router(router_productos.router)
+app.include_router(inventario.router)
 app.include_router(alertas.router)
 
 

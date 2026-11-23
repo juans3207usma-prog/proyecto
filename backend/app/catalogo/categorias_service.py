@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Categoria
-from app.services.errores import Conflicto, NoEncontrado
+from app.catalogo.models import Categoria
+from app.compartido.errores import Conflicto, NoEncontrado
 
 
 def listar(db: Session) -> list[Categoria]:

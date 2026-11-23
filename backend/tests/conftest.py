@@ -11,7 +11,7 @@ from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-from app.database import Base, get_db  # noqa: E402
+from app.compartido.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import Categoria, Lote, Producto  # noqa: E402
 
@@ -35,11 +35,24 @@ def producto(db):
     db.add(categoria)
     db.flush()
     p = Producto(nombre="Paracetamol", precio=2, stock_minimo=40, categoria_id=categoria.id)
-    p.lotes = [
-        Lote(numero_lote="A", cantidad=50, fecha_vencimiento=date.today() + timedelta(days=300)),
-        Lote(numero_lote="B", cantidad=30, fecha_vencimiento=date.today() + timedelta(days=20)),
-    ]
     db.add(p)
+    db.flush()
+    db.add_all(
+        [
+            Lote(
+                producto_id=p.id,
+                numero_lote="A",
+                cantidad=50,
+                fecha_vencimiento=date.today() + timedelta(days=300),
+            ),
+            Lote(
+                producto_id=p.id,
+                numero_lote="B",
+                cantidad=30,
+                fecha_vencimiento=date.today() + timedelta(days=20),
+            ),
+        ]
+    )
     db.commit()
     return p
 

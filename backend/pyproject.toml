@@ -9,6 +9,10 @@ select = ["E", "F", "I", "UP", "B"]
 # Depends() y Query() en los argumentos es el patron normal de FastAPI.
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 
+[tool.coverage.run]
+# La cobertura se mide sobre la logica de negocio: servicios y regla FEFO.
+include = ["app/*/*service*.py", "app/inventario/fefo.py", "app/inventario/stock.py"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

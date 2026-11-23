@@ -1,28 +1,13 @@
-from datetime import date
-
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Categoria, Lote, Producto
-from app.schemas import ProductoIn
-from app.services.errores import NoEncontrado
+from app.catalogo.models import Categoria, Producto
+from app.catalogo.schemas import ProductoIn
+from app.compartido.errores import NoEncontrado
 
 
-def stock_actual(db: Session, producto_id: int) -> int:
-    """Stock vendible: suma de lotes no vencidos."""
-    total = db.scalar(
-        select(func.coalesce(func.sum(Lote.cantidad), 0)).where(
-            Lote.producto_id == producto_id, Lote.fecha_vencimiento >= date.today()
-        )
-    )
-    return int(total or 0)
-
-
-def listar(db: Session) -> list[tuple[Producto, int]]:
-    productos = db.scalars(
-        select(Producto).where(Producto.activo).order_by(Producto.nombre)
-    ).all()
-    return [(p, stock_actual(db, p.id)) for p in productos]
+def listar(db: Session) -> list[Producto]:
+    return list(db.scalars(select(Producto).where(Producto.activo).order_by(Producto.nombre)))
 
 
 def obtener(db: Session, producto_id: int) -> Producto:

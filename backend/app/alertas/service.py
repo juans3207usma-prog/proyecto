@@ -3,7 +3,8 @@ from datetime import date, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import Lote, Producto
+from app.catalogo.models import Producto
+from app.inventario.models import Lote
 
 
 def stock_bajo(db: Session) -> list[dict]:

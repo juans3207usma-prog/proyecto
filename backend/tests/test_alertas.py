@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
-from app.services.alertas import por_vencer, stock_bajo
-from app.services.movimientos import registrar_salida
+from app.alertas.service import por_vencer, stock_bajo
+from app.inventario.service import registrar_salida
 
 
 def test_sin_alerta_si_stock_sobre_el_minimo(db, producto):

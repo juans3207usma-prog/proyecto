@@ -2,9 +2,11 @@ from decimal import Decimal
 
 import pytest
 
-from app.schemas import ProductoIn
-from app.services import categorias, productos
-from app.services.errores import Conflicto, NoEncontrado
+from app.catalogo import categorias_service as categorias
+from app.catalogo import productos_service as productos
+from app.catalogo.schemas import ProductoIn
+from app.compartido.errores import Conflicto, NoEncontrado
+from app.inventario.stock import stock_por_producto
 
 
 def datos_producto(categoria_id, **extra):
@@ -61,8 +63,10 @@ def test_crear_producto_con_categoria_inexistente(db):
 
 def test_crear_listar_y_stock(db, producto):
     nuevo = productos.crear(db, datos_producto(producto.categoria_id))
-    stock = dict((p.nombre, s) for p, s in productos.listar(db))
-    assert stock == {"Aspirina": 0, "Paracetamol": 80}
+    lista = productos.listar(db)
+    stock = stock_por_producto(db, [p.id for p in lista])
+    assert {p.nombre: stock.get(p.id, 0) for p in lista} == {"Aspirina": 0, "Paracetamol": 80}
+    assert stock_por_producto(db, []) == {}
     assert productos.obtener(db, nuevo.id).nombre == "Aspirina"
 
 

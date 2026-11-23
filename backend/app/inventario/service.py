@@ -3,8 +3,10 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Lote, Movimiento, Producto
-from app.services.errores import NoEncontrado, StockInsuficiente
+from app.catalogo.models import Producto
+from app.compartido.errores import NoEncontrado
+from app.inventario.fefo import LoteStock, planificar_salida
+from app.inventario.models import Lote, Movimiento
 
 
 def _producto_activo(db: Session, producto_id: int) -> Producto:
@@ -40,10 +42,11 @@ def registrar_entrada(
 
 
 def registrar_salida(db: Session, producto_id: int, cantidad: int) -> None:
-    """Descuenta stock con FEFO (primero en vencer, primero en salir).
+    """Descuenta stock aplicando el plan FEFO dentro de una sola transaccion.
 
-    Todo ocurre en una transaccion: si el stock no alcanza o algo falla,
-    se hace rollback y ningun lote cambia.
+    La decision (que lote, cuanto) la toma `fefo.planificar_salida`; aqui solo se
+    bloquean las filas, se aplica el plan y se registra el movimiento. Si el stock
+    no alcanza o algo falla, se hace rollback y ningun lote cambia.
     """
     _producto_activo(db, producto_id)
     try:
@@ -52,22 +55,18 @@ def registrar_salida(db: Session, producto_id: int, cantidad: int) -> None:
             .where(
                 Lote.producto_id == producto_id,
                 Lote.cantidad > 0,
-                Lote.fecha_vencimiento >= date.today(),  # nunca vender vencidos
+                Lote.fecha_vencimiento >= date.today(),
             )
-            .order_by(Lote.fecha_vencimiento, Lote.id)  # FEFO + desempate estable
             .with_for_update()  # bloquea las filas ante ventas simultaneas
         ).all()
 
-        if sum(lote.cantidad for lote in lotes) < cantidad:
-            raise StockInsuficiente("Stock insuficiente")
-
-        pendiente = cantidad
+        plan = planificar_salida(
+            [LoteStock(lote.id, lote.cantidad, lote.fecha_vencimiento) for lote in lotes],
+            cantidad,
+            date.today(),
+        )
         for lote in lotes:
-            if pendiente == 0:
-                break
-            tomar = min(lote.cantidad, pendiente)
-            lote.cantidad -= tomar
-            pendiente -= tomar
+            lote.cantidad -= plan.get(lote.id, 0)
 
         db.add(Movimiento(producto_id=producto_id, tipo="salida", cantidad=cantidad))
         db.commit()

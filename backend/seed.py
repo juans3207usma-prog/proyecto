@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
-from app.database import SessionLocal
+from app.compartido.database import SessionLocal
 from app.models import Categoria, Lote, Producto
 
 CATEGORIAS = ["Analgesicos", "Antibioticos", "Higiene", "Suplementos"]
@@ -44,15 +44,17 @@ def run() -> None:
                 requiere_receta=receta,
                 categoria_id=categorias[cat].id,
             )
-            producto.lotes = [
+            db.add(producto)
+            db.flush()
+            db.add_all(
                 Lote(
+                    producto_id=producto.id,
                     numero_lote=num,
                     cantidad=cant,
                     fecha_vencimiento=date.today() + timedelta(days=dias),
                 )
                 for num, cant, dias in lotes
-            ]
-            db.add(producto)
+            )
         db.commit()
     print("Semilla aplicada.")
 

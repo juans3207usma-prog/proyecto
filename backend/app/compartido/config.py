@@ -2,8 +2,8 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# El .env vive en la raiz del repositorio (dos niveles sobre este archivo).
-ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+# El .env vive en la raiz del repositorio (tres niveles sobre este archivo).
+ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
 
 
 class Settings(BaseSettings):

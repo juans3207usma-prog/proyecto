@@ -59,7 +59,7 @@ UI: http://localhost:5173
 
 ```powershell
 cd backend
-pytest --cov=app/services --cov-fail-under=70   # falla si la cobertura baja de 70 %
+pytest --cov --cov-fail-under=70   # cobertura de servicios y FEFO; falla bajo 70 %
 ruff check .
 
 cd ..\frontend
@@ -69,13 +69,35 @@ npx eslint .
 Las pruebas usan SQLite en memoria (rapidas, sin Docker). El bloqueo de filas
 (`with_for_update`) solo tiene efecto en PostgreSQL; SQLite lo ignora.
 
+## Arquitectura: monolito modular
+
+```
+backend/app/
+├── catalogo/     # categorias y productos (modelos, schemas, servicios, routers)
+├── inventario/   # lotes, movimientos, stock y la regla FEFO (fefo.py, funcion pura)
+├── alertas/      # consultas de stock bajo y de proximos a vencer
+├── compartido/   # config, base de datos, errores de negocio
+└── main.py       # arma la app y registra los routers
+```
+
+Reglas de dependencia:
+
+- `catalogo` (modelos y servicios) no conoce a `inventario`; `inventario` depende de `catalogo`.
+- `alertas` solo lee de `catalogo` e `inventario`.
+- Unica excepcion de lectura: el router de productos consulta `inventario.stock` para
+  mostrar el stock junto a cada producto (una consulta, sin N+1).
+- `inventario/fefo.py` no usa base de datos: decide de que lote y cuanto descontar. El
+  servicio solo bloquea filas, aplica el plan y registra el movimiento.
+
 ## Decisiones tecnicas
 
 | Decision | Motivo |
 |---|---|
 | Stock por **lote**, no por producto | Hace posible FEFO y el control de vencimientos. |
 | Salida en **una sola transaccion** con `with_for_update()` | Todo o nada; evita ventas simultaneas sobre el mismo stock. |
-| Logica en `app/services/` | Separada de HTTP, facil de probar; la cobertura se mide ahi. |
+| Modulos por dominio | Cada modulo agrupa lo suyo; las dependencias van en un solo sentido. |
+| FEFO como funcion pura | Se prueba sin base de datos; el servicio solo la aplica. |
+| Logica en servicios (`*service*.py`) | Separada de HTTP y facil de probar; la cobertura se mide ahi. |
 | `Numeric`/`Decimal` para precios | Evita errores de redondeo de `float`. |
 | Borrado logico de productos | Conserva la integridad del historial de movimientos. |
 | Movimientos inmutables | Solo se insertan; las correcciones son movimientos de ajuste. |

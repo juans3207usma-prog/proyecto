@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
-      - run: pytest --cov=app/services --cov-fail-under=70
+      - run: pytest --cov --cov-fail-under=70
         env:
           DATABASE_URL: sqlite://
           SECRET_KEY: ci-test

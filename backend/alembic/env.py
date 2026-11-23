@@ -4,8 +4,8 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 from app import models  # noqa: F401  (registra las tablas en Base.metadata)
-from app.config import settings
-from app.database import Base
+from app.compartido.config import settings
+from app.compartido.database import Base
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))

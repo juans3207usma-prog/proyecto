@@ -2,9 +2,9 @@ from datetime import date, timedelta
 
 import pytest
 
+from app.compartido.errores import NoEncontrado, StockInsuficiente
+from app.inventario.service import registrar_entrada, registrar_salida
 from app.models import Lote, Movimiento
-from app.services.errores import NoEncontrado, StockInsuficiente
-from app.services.movimientos import registrar_entrada, registrar_salida
 
 
 def lote(db, nombre):
