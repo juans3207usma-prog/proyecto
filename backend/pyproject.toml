@@ -11,7 +11,7 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 
 [tool.coverage.run]
 # La cobertura se mide sobre la logica de negocio: servicios y regla FEFO.
-include = ["app/*/*service*.py", "app/inventario/fefo.py", "app/inventario/stock.py"]
+include = ["app/modulos/*/servicios/*.py", "app/modulos/*/dominio/*.py"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
